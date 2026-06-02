@@ -18,7 +18,8 @@ export function useIncidentStream() {
       }
     };
 
-    // Server coalesces incident activity into periodic counts; we just accumulate + refetch.
+    // Server coalesces incident activity into periodic counts; we accumulate + refetch.
+    // The refetch repopulates the list (and the recent-incidents feed) with current data.
     source.addEventListener('incidents.changed', (e) => {
       const { count } = JSON.parse((e as MessageEvent).data) as { count: number };
       setEventCount((n) => n + count);

@@ -114,7 +114,7 @@ server-side (~2/sec) so a high-volume run doesn't flood clients with tens of tho
 messages — the dashboard only needs "something changed, and how much," then refetches.
 
 - `incidents.changed` — data `{ "count": <n> }` (incidents changed in the window)
-- `incidents.cleared` — data `null` (sent immediately when all data is cleared)
+- `incidents.cleared` — data `{ "cleared": true }` (sent immediately when all data is cleared)
 
 ```
 event: incidents.changed

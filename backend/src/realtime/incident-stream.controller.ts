@@ -9,7 +9,7 @@ export class IncidentStreamController {
   constructor(private readonly stream: IncidentStreamService) {}
 
   @Sse()
-  @ApiOperation({ summary: 'Server-Sent Events: incident.created / incident.updated' })
+  @ApiOperation({ summary: 'Server-Sent Events: incidents.changed / incidents.cleared' })
   subscribe(): Observable<IncidentMessage> {
     return this.stream.asObservable();
   }

@@ -1,24 +1,25 @@
-import { Range, RANGES, RANGE_LABELS } from '../lib/timeRange';
+import { Range, RANGES } from '../lib/timeRange';
 
 interface Props {
   value: Range;
   onChange: (range: Range) => void;
 }
 
+const SHORT_LABELS: Record<Range, string> = {
+  '15m': '15M',
+  '1h': '1H',
+  '6h': '6H',
+  '24h': '24H',
+  '7d': '7D',
+  all: 'ALL',
+};
+
 export function TimeRangeControl({ value, onChange }: Props) {
   return (
-    <div className="flex flex-wrap gap-1">
+    <div className="seg">
       {RANGES.map((range) => (
-        <button
-          key={range}
-          onClick={() => onChange(range)}
-          className={`rounded-md px-3 py-1.5 text-sm ${
-            value === range
-              ? 'bg-slate-900 text-white'
-              : 'border border-slate-200 bg-white text-slate-700'
-          }`}
-        >
-          {RANGE_LABELS[range]}
+        <button key={range} className={value === range ? 'on' : ''} onClick={() => onChange(range)}>
+          {SHORT_LABELS[range]}
         </button>
       ))}
     </div>

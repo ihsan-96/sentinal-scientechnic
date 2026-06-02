@@ -29,4 +29,15 @@ describe('IncidentTable', () => {
     fireEvent.click(screen.getByText('CAM-001'));
     expect(onSelect).toHaveBeenCalledWith(incident);
   });
+
+  it('renders an advance action and does not select the row when clicked', () => {
+    const onSelect = vi.fn();
+    const onAdvance = vi.fn();
+    render(<IncidentTable incidents={[incident]} onSelect={onSelect} onAdvance={onAdvance} />);
+
+    // OPEN advances to ACKNOWLEDGED ("Ack")
+    fireEvent.click(screen.getByRole('button', { name: /ack/i }));
+    expect(onAdvance).toHaveBeenCalledWith('abc', 'ACKNOWLEDGED');
+    expect(onSelect).not.toHaveBeenCalled();
+  });
 });

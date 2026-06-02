@@ -1,3 +1,5 @@
+import { Icons } from '../lib/icons';
+
 interface Props {
   page: number;
   pageSize: number;
@@ -5,32 +7,32 @@ interface Props {
   onPageChange: (page: number) => void;
 }
 
+/** Compact chevron pager: ‹ page / total ›. */
 export function Pagination({ page, pageSize, total, onPageChange }: Props) {
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
-  const from = total === 0 ? 0 : (page - 1) * pageSize + 1;
-  const to = Math.min(page * pageSize, total);
-
   return (
-    <div className="flex items-center justify-between px-4 py-3 text-sm text-slate-600">
-      <span>
-        {from}–{to} of {total}
+    <div className="row" style={{ gap: 8 }}>
+      <button
+        className="btn btn-icon"
+        disabled={page <= 1}
+        style={{ opacity: page <= 1 ? 0.4 : 1 }}
+        onClick={() => onPageChange(page - 1)}
+        aria-label="Previous page"
+      >
+        <Icons.ChevronLeft size={15} />
+      </button>
+      <span className="mono faint" style={{ fontSize: 11, minWidth: 54, textAlign: 'center' }}>
+        {page} / {totalPages}
       </span>
-      <div className="flex gap-2">
-        <button
-          className="rounded-md border border-slate-300 px-3 py-1 disabled:opacity-40"
-          disabled={page <= 1}
-          onClick={() => onPageChange(page - 1)}
-        >
-          Previous
-        </button>
-        <button
-          className="rounded-md border border-slate-300 px-3 py-1 disabled:opacity-40"
-          disabled={page >= totalPages}
-          onClick={() => onPageChange(page + 1)}
-        >
-          Next
-        </button>
-      </div>
+      <button
+        className="btn btn-icon"
+        disabled={page >= totalPages}
+        style={{ opacity: page >= totalPages ? 0.4 : 1 }}
+        onClick={() => onPageChange(page + 1)}
+        aria-label="Next page"
+      >
+        <Icons.ChevronRight size={15} />
+      </button>
     </div>
   );
 }

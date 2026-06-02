@@ -3,10 +3,9 @@ import { OnEvent } from '@nestjs/event-emitter';
 import { bufferTime, filter, map, merge, Observable, Subject } from 'rxjs';
 import { IncidentEvents } from '../incidents/incident.events';
 
-export interface IncidentMessage {
-  type: 'incidents.changed' | 'incidents.cleared';
-  data: { count: number } | null;
-}
+export type IncidentMessage =
+  | { type: 'incidents.changed'; data: { count: number } }
+  | { type: 'incidents.cleared'; data: { cleared: true } };
 
 const COALESCE_MS = 500;
 
@@ -17,9 +16,11 @@ export class IncidentStreamService {
 
   /**
    * Coalesces high-volume incident events into a periodic `incidents.changed` with a count
-   * (the dashboard only needs "something changed, and how much"), so a 10k-case run doesn't
-   * flood clients with tens of thousands of messages. `incidents.cleared` is forwarded
-   * immediately so the dashboard resets promptly.
+   * (the dashboard only needs "something changed, and how much", then refetches the
+   * filtered/paginated list + stats), so a 10k-case run doesn't flood clients with tens of
+   * thousands of messages. `incidents.cleared` is forwarded immediately so the dashboard
+   * resets promptly. Its payload is a non-empty object on purpose: NestJS's SSE writer omits
+   * the `data:` line when `data` is falsy, and the browser won't dispatch a data-less event.
    */
   asObservable(): Observable<IncidentMessage> {
     const changed$ = this.changes.pipe(
@@ -28,7 +29,7 @@ export class IncidentStreamService {
       map((batch): IncidentMessage => ({ type: 'incidents.changed', data: { count: batch.length } })),
     );
     const cleared$ = this.cleared.pipe(
-      map((): IncidentMessage => ({ type: 'incidents.cleared', data: null })),
+      map((): IncidentMessage => ({ type: 'incidents.cleared', data: { cleared: true } })),
     );
     return merge(changed$, cleared$);
   }
