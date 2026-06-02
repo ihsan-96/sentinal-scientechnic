@@ -1,0 +1,21 @@
+export enum EventType {
+  ACCIDENT = 'ACCIDENT',
+  CONGESTION = 'CONGESTION',
+  ROAD_CLOSURE = 'ROAD_CLOSURE',
+  HAZARD = 'HAZARD',
+  BREAKDOWN = 'BREAKDOWN',
+}
+
+export enum Severity {
+  LOW = 'LOW',
+  MEDIUM = 'MEDIUM',
+  HIGH = 'HIGH',
+  CRITICAL = 'CRITICAL',
+}
+
+export enum IncidentStatus {
+  OPEN = 'OPEN',
+  ACKNOWLEDGED = 'ACKNOWLEDGED',
+  IN_PROGRESS = 'IN_PROGRESS',
+  RESOLVED = 'RESOLVED',
+}

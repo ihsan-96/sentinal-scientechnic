@@ -1,0 +1,16 @@
+import { drizzle } from 'drizzle-orm/postgres-js';
+import { migrate } from 'drizzle-orm/postgres-js/migrator';
+import postgres from 'postgres';
+
+async function main() {
+  const url = process.env.DATABASE_URL ?? 'postgres://traffic:traffic@localhost:5432/incidents';
+  const client = postgres(url, { max: 1 });
+  await migrate(drizzle(client), { migrationsFolder: './src/db/migrations' });
+  await client.end();
+  console.log('Migrations applied.');
+}
+
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

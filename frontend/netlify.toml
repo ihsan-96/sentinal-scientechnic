@@ -1,0 +1,11 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# Set VITE_API_URL in Site settings → Environment variables (the deployed backend URL).
+
+# SPA fallback so client routes resolve to index.html.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
