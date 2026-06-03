@@ -1,9 +1,9 @@
 # Netlify reads this file via the site's Package directory (= `simulator`, set automatically
 # when you pick this workspace on import). The Base directory stays unset (= repo root), so
-# `command` and `publish` are RELATIVE TO THE REPO ROOT — hence the `simulator/` prefix and the
-# `-w simulator` build. (Mirrors the madian-tools workspace pattern.)
+# `command` and `publish` are RELATIVE TO THE REPO ROOT. pnpm install + filtered build run
+# from the root (Netlify auto-detects pnpm from pnpm-lock.yaml). Mirrors the madian-tools pattern.
 [build]
-  command = "npm run build -w simulator"
+  command = "pnpm --filter traffic-incidents-simulator build"
   publish = "simulator/dist"
 
 [build.environment]

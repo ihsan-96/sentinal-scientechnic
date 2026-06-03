@@ -1,9 +1,9 @@
 # Netlify reads this file via the site's Package directory (= `frontend`, set automatically
 # when you pick this workspace on import). The Base directory stays unset (= repo root), so
-# `command` and `publish` are RELATIVE TO THE REPO ROOT — hence the `frontend/` prefix and the
-# `-w frontend` build. (Mirrors the madian-tools workspace pattern.)
+# `command` and `publish` are RELATIVE TO THE REPO ROOT. pnpm install + filtered build run
+# from the root (Netlify auto-detects pnpm from pnpm-lock.yaml). Mirrors the madian-tools pattern.
 [build]
-  command = "npm run build -w frontend"
+  command = "pnpm --filter traffic-incidents-frontend build"
   publish = "frontend/dist"
 
 [build.environment]
