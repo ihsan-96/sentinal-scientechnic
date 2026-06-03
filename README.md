@@ -3,6 +3,16 @@
 Ingests traffic incidents from roadside devices as **cases with a status timeline**,
 processes them through a queue, and streams them to an operator dashboard in real time.
 
+## Live demo
+
+| App | URL |
+|---|---|
+| **Dashboard** (operator UI) | https://enchanting-alpaca-23aca2.netlify.app |
+| **Simulator + docs** | https://courageous-kitsune-bb938f.netlify.app |
+
+Both point at the live backend at `https://scientechnic.madian.in`. Open the **simulator**,
+generate some traffic, then switch to the **dashboard** to watch cases open and resolve live.
+
 ## Quick start
 
 Three pieces run locally: the **backend + infra** (Docker), the **dashboard**, and the
@@ -11,8 +21,9 @@ Three pieces run locally: the **backend + infra** (Docker), the **dashboard**, a
 ### Prerequisites
 
 - **Docker** + **Docker Compose** — runs the backend, PostgreSQL and Redis.
-- **Node 22** + **npm** — to run the dashboard and simulator locally (matches the backend's
-  `node:22-alpine`; the SPAs build with Vite 8, which needs Node ≥ 20.19).
+- **Node 22** + **npm or pnpm** — to run the dashboard and simulator. They're a pnpm workspace
+  (that's what Netlify deploys), but each app also installs standalone, so **either tool works
+  locally**. Matches the backend's `node:22-alpine`; the SPAs build with Vite 8 (Node ≥ 20.19).
 
 ### 1 · Backend + infrastructure (Docker)
 
@@ -30,9 +41,8 @@ docker compose up --build
 
 ```bash
 cd frontend
-cp .env.example .env   # VITE_API_URL defaults to http://localhost:4000/api
-npm install
-npm run dev
+npm install     # or: pnpm install
+npm run dev     # or: pnpm dev
 ```
 
 → http://localhost:5173
@@ -41,9 +51,8 @@ npm run dev
 
 ```bash
 cd simulator
-cp .env.example .env   # VITE_API_URL defaults to http://localhost:4000/api
-npm install
-npm run dev
+npm install     # or: pnpm install
+npm run dev     # or: pnpm dev
 ```
 
 → http://localhost:5174 — set a **Count**, hit run, and flip to the dashboard to watch cases
@@ -132,10 +141,11 @@ docker compose exec backend node dist/db/clear.js
 Both frontends are static SPAs. Each folder (`frontend/`, `simulator/`) ships its own
 `netlify.toml` + `vercel.json` (build command, output dir, SPA fallback, Node 22).
 
-**Netlify** — connect this repo; Netlify **auto-detects** the per-folder `netlify.toml` and
-offers a **dropdown** to pick which app to deploy. Create one site for the **dashboard**
-(`frontend`) and one for the **simulator** (`simulator`). On each site set **`VITE_API_URL`**
-(Site settings → Environment variables) to your deployed backend's URL.
+**Netlify** — connect this repo; Netlify **auto-detects** the pnpm workspace and offers a
+**dropdown** to pick which app to deploy. Create one site for the **dashboard** (`frontend`)
+and one for the **simulator** (`simulator`); each builds via its own `netlify.toml`. On each
+site set **`VITE_API_URL`** (Site settings → Environment variables) to your deployed backend's
+URL (e.g. `https://scientechnic.madian.in/api`) — the apps default to localhost otherwise.
 
 **Vercel** — import the repo twice, once per app, with **Root Directory** = `frontend` /
 `simulator`; set `VITE_API_URL` per project.

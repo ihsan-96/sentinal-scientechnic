@@ -23,7 +23,7 @@ separated, **no trailing slash, no path**. The backend splits this on commas and
 
 ```bash
 git clone <this-repo-url> app && cd app
-export CORS_ORIGIN="https://<dashboard-host>,https://<simulator-host>"
+export CORS_ORIGIN="https://enchanting-alpaca-23aca2.netlify.app,https://courageous-kitsune-bb938f.netlify.app"
 docker compose up -d --build
 ```
 
@@ -50,7 +50,8 @@ sudo systemctl reload caddy      # or: caddy reload --config /etc/caddy/Caddyfil
 
 ## 4. Point the frontends at it
 
-In each frontend's hosting (Netlify/Vercel → Environment variables), set and redeploy:
+The apps default to the **local** backend, so set each Netlify/Vercel site's `VITE_API_URL`
+(Site settings → Environment variables) to this backend and redeploy:
 
 ```
 VITE_API_URL=https://scientechnic.madian.in/api
