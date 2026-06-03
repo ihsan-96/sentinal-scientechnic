@@ -5,18 +5,21 @@ processes them through a queue, and streams them to an operator dashboard in rea
 
 ## Live demo
 
-| App | URL |
+| What | Link |
 |---|---|
 | **Dashboard** (operator UI) | https://enchanting-alpaca-23aca2.netlify.app |
-| **Simulator + docs** | https://courageous-kitsune-bb938f.netlify.app |
+| **Simulator** (generate traffic) | https://courageous-kitsune-bb938f.netlify.app |
+| **Docs** (architecture guide) | https://courageous-kitsune-bb938f.netlify.app/docs |
+| **API docs** (live Swagger) | https://scientechnic.madian.in/api/docs |
 
-Both point at the live backend at `https://scientechnic.madian.in`. Open the **simulator**,
+The frontends call the live backend at `https://scientechnic.madian.in`. Open the **simulator**,
 generate some traffic, then switch to the **dashboard** to watch cases open and resolve live.
 
 ## Quick start
 
-Three pieces run locally: the **backend + infra** (Docker), the **dashboard**, and the
-**simulator**. Bring up the backend first, then either frontend.
+Three pieces run locally — the **backend + infra** (Docker), the **dashboard**, and the
+**simulator** — each in **its own terminal** (the dev servers stay in the foreground). Bring up
+the backend first, then start each frontend from the **repo root**.
 
 ### Prerequisites
 

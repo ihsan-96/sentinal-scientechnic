@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Generator } from './components/Generator';
 import { NavId, Sidebar } from './components/Sidebar';
 import { ApiReference } from './docs/ApiReference';
@@ -37,15 +37,53 @@ const META: Record<NavId, { title: string; sub: string }> = {
   scale: { title: 'Scale & Bottlenecks', sub: 'From 100 to 100,000 devices' },
 };
 
+const DOCS_IDS: NavId[] = [
+  'overview', 'architecture', 'datamodel', 'api', 'decisions', 'tech', 'deployment', 'scale',
+];
+
+// Map the URL path to a view and back, so the docs are directly linkable (e.g. /docs,
+// /docs/architecture). Generator stays at /. SPA fallback (netlify.toml + Vite) serves these.
+function pathToNav(pathname: string): NavId {
+  const path = pathname.replace(/\/+$/, '') || '/';
+  if (path === '/docs') return 'overview';
+  if (path.startsWith('/docs/')) {
+    const id = path.slice('/docs/'.length) as NavId;
+    return DOCS_IDS.includes(id) ? id : 'overview';
+  }
+  return 'generator';
+}
+
+function navToPath(nav: NavId): string {
+  if (nav === 'generator') return '/';
+  if (nav === 'overview') return '/docs';
+  return `/docs/${nav}`;
+}
+
 export default function App() {
   const [config, setConfig] = useState<RunConfig>(DEFAULTS);
-  const [nav, setNav] = useState<NavId>('generator');
+  const [nav, setNav] = useState<NavId>(() => pathToNav(window.location.pathname));
   const sim = useSimulator();
   const meta = META[nav];
 
+  // Navigate + reflect the view in the address bar so links like /docs are shareable.
+  const go = (id: NavId) => {
+    setNav(id);
+    const path = navToPath(id);
+    if (path !== window.location.pathname) window.history.pushState(null, '', path);
+  };
+
+  useEffect(() => {
+    const onPop = () => setNav(pathToNav(window.location.pathname));
+    window.addEventListener('popstate', onPop);
+    // Normalize the address bar to the canonical path for the resolved view.
+    const canonical = navToPath(pathToNav(window.location.pathname));
+    if (canonical !== window.location.pathname) window.history.replaceState(null, '', canonical);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
+
   return (
     <div className="app">
-      <Sidebar active={nav} onNav={setNav} running={sim.running} opened={sim.opened} />
+      <Sidebar active={nav} onNav={go} running={sim.running} opened={sim.opened} />
       <main className="main">
         <header className="topbar">
           <div>
@@ -63,7 +101,7 @@ export default function App() {
 
         <div className="scroll" key={nav}>
           {nav === 'generator' && <Generator config={config} onChange={setConfig} sim={sim} />}
-          {nav === 'overview' && <Overview onNav={setNav} />}
+          {nav === 'overview' && <Overview onNav={go} />}
           {nav === 'architecture' && <Architecture />}
           {nav === 'datamodel' && <DataModel />}
           {nav === 'api' && <ApiReference />}
