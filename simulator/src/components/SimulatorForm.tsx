@@ -8,9 +8,6 @@ interface Props {
   disabled: boolean;
 }
 
-const inputClass =
-  'mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm disabled:bg-slate-100';
-
 const COUNT_PRESETS = [100, 1000, 10000];
 
 export function SimulatorForm({ config, onChange, disabled }: Props) {
@@ -19,68 +16,55 @@ export function SimulatorForm({ config, onChange, disabled }: Props) {
     onChange({ ...config, overrides: { ...config.overrides, ...patch } });
 
   return (
-    <div className="space-y-5">
-      <Field label="Backend endpoint">
-        <input
-          className={inputClass}
-          placeholder="http://localhost:4000/api"
-          disabled={disabled}
-          value={config.apiUrl}
-          onChange={(e) => set({ apiUrl: e.target.value })}
-        />
-      </Field>
-
-      <div className="flex gap-2">
-        {(['oneshot', 'continuous'] as Mode[]).map((mode) => (
-          <button
-            key={mode}
-            type="button"
-            disabled={disabled}
-            onClick={() => set({ mode })}
-            className={`rounded-md px-3 py-1.5 text-sm ${
-              config.mode === mode ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-700'
-            }`}
-          >
-            {mode === 'oneshot' ? 'One-shot' : 'Continuous'}
-          </button>
-        ))}
+    <div className="col" style={{ gap: 20 }}>
+      <div>
+        <span className="label-caps">Mode</span>
+        <div className="seg" style={{ marginTop: 8 }}>
+          {(['oneshot', 'continuous'] as Mode[]).map((mode) => (
+            <button
+              key={mode}
+              type="button"
+              disabled={disabled}
+              className={config.mode === mode ? 'on' : ''}
+              onClick={() => set({ mode })}
+            >
+              {mode === 'oneshot' ? 'One-shot' : 'Continuous'}
+            </button>
+          ))}
+        </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid-2">
         {config.mode === 'oneshot' ? (
           <>
             <Field label="Count">
               <input
                 type="number"
                 min={1}
-                className={inputClass}
+                className="field"
                 disabled={disabled}
                 value={config.count}
                 onChange={(e) => set({ count: Number(e.target.value) })}
               />
-              <div className="mt-1 flex gap-1">
+              <div className="tag-row" style={{ marginTop: 8 }}>
                 {COUNT_PRESETS.map((preset) => (
                   <button
                     key={preset}
                     type="button"
                     disabled={disabled}
+                    className={`chip${config.count === preset ? ' on' : ''}`}
                     onClick={() => set({ count: preset })}
-                    className={`rounded px-2 py-0.5 text-xs ${
-                      config.count === preset
-                        ? 'bg-slate-900 text-white'
-                        : 'border border-slate-200 bg-white text-slate-600'
-                    }`}
                   >
                     {preset.toLocaleString()}
                   </button>
                 ))}
               </div>
             </Field>
-            <Field label="Rate (target incidents/sec, 0 = max)">
+            <Field label="Rate (target/sec · 0 = max)">
               <input
                 type="number"
                 min={0}
-                className={inputClass}
+                className="field"
                 disabled={disabled}
                 value={config.rate}
                 onChange={(e) => set({ rate: Number(e.target.value) })}
@@ -93,7 +77,7 @@ export function SimulatorForm({ config, onChange, disabled }: Props) {
               type="number"
               min={0.2}
               step={0.1}
-              className={inputClass}
+              className="field"
               disabled={disabled}
               value={config.interval}
               onChange={(e) => set({ interval: Number(e.target.value) })}
@@ -105,7 +89,7 @@ export function SimulatorForm({ config, onChange, disabled }: Props) {
             type="number"
             min={1}
             max={1000}
-            className={inputClass}
+            className="field"
             disabled={disabled}
             value={config.batchSize}
             onChange={(e) => set({ batchSize: Number(e.target.value) })}
@@ -113,25 +97,24 @@ export function SimulatorForm({ config, onChange, disabled }: Props) {
         </Field>
       </div>
 
-      <p className="text-xs text-slate-400">
-        Batch size = incidents per request (≤ 1000). Rate = target incidents/sec
-        (best-effort — actual throughput is bounded by the backend; the live rate is shown
-        below).
+      <p className="faint mono" style={{ fontSize: 11, lineHeight: 1.6, margin: 0 }}>
+        Batch size = incidents per request (≤ 1000). Rate is best-effort — actual throughput is
+        bounded by the backend; the live rate is shown after you start.
       </p>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid-2">
         <Field label="Progress % (cases advanced through lifecycle)">
           <input
             type="number"
             min={0}
             max={100}
-            className={inputClass}
+            className="field"
             disabled={disabled}
             value={config.progressPct}
             onChange={(e) => set({ progressPct: Number(e.target.value) })}
           />
         </Field>
-        <label className="flex items-center gap-2 self-end pb-2 text-sm text-slate-700">
+        <label className="chip" style={{ alignSelf: 'end', justifyContent: 'flex-start' }}>
           <input
             type="checkbox"
             disabled={disabled}
@@ -143,10 +126,10 @@ export function SimulatorForm({ config, onChange, disabled }: Props) {
       </div>
 
       <div>
-        <p className="text-sm font-semibold text-slate-700">
-          Case attributes <span className="font-normal text-slate-400">(blank = random)</span>
-        </p>
-        <div className="mt-2 grid grid-cols-2 gap-4">
+        <span className="label-caps">
+          Case attributes <span className="faint">· blank = random</span>
+        </span>
+        <div className="grid-2" style={{ marginTop: 10 }}>
           <Select
             label="Severity"
             value={config.overrides.severity ?? ''}
@@ -170,7 +153,7 @@ export function SimulatorForm({ config, onChange, disabled }: Props) {
           />
           <Field label="Device">
             <input
-              className={inputClass}
+              className="field"
               placeholder="random"
               disabled={disabled}
               value={config.overrides.device ?? ''}
@@ -185,8 +168,8 @@ export function SimulatorForm({ config, onChange, disabled }: Props) {
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <label className="block">
-      <span className="block text-sm font-medium text-slate-600">{label}</span>
+    <label className="col" style={{ gap: 8 }}>
+      <span className="label-caps">{label}</span>
       {children}
     </label>
   );
@@ -208,7 +191,7 @@ function Select<T extends string>({
   return (
     <Field label={label}>
       <select
-        className={inputClass}
+        className="field"
         value={value}
         disabled={disabled}
         onChange={(e) => onChange((e.target.value || undefined) as T | undefined)}

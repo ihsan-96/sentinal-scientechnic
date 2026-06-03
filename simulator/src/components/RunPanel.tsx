@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Icons } from '../lib/icons';
 
 interface Props {
   running: boolean;
@@ -22,29 +23,52 @@ export function RunPanel({ running, opened, updates, startedAt, error, onStart, 
   const rate = elapsed > 0 ? Math.round(opened / elapsed) : 0;
 
   return (
-    <div className="space-y-3 border-t border-slate-200 pt-5">
-      <div className="flex items-center gap-3">
-        <button
-          onClick={onStart}
-          disabled={running}
-          className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-40"
-        >
-          Start
-        </button>
-        <button
-          onClick={onStop}
-          disabled={!running}
-          className="rounded-md bg-slate-200 px-4 py-2 text-sm font-medium text-slate-700 disabled:opacity-40"
-        >
-          Stop
-        </button>
-        <span className="flex items-center gap-2 text-sm text-slate-600">
-          <span className={`h-2.5 w-2.5 rounded-full ${running ? 'bg-emerald-500' : 'bg-slate-300'}`} />
-          {running ? 'Running' : 'Idle'} · {opened.toLocaleString()} cases ·{' '}
-          {updates.toLocaleString()} updates · ~{rate.toLocaleString()}/s actual
+    <div className="col" style={{ gap: 16 }}>
+      <div className="row gap" style={{ justifyContent: 'space-between' }}>
+        <div className="row gap">
+          <button className="btn btn-accent" onClick={onStart} disabled={running}>
+            <Icons.Play size={13} /> Start
+          </button>
+          <button className="btn" onClick={onStop} disabled={!running}>
+            <Icons.Square size={13} /> Stop
+          </button>
+        </div>
+        <span className="row gap" style={{ gap: 8 }}>
+          <span className={`live-dot${running ? '' : ' off'}`} />
+          <span className="label-caps" style={{ color: running ? 'var(--success)' : undefined }}>
+            {running ? 'Running' : 'Idle'}
+          </span>
         </span>
       </div>
-      {error && <p className="text-sm text-red-600">{error}</p>}
+
+      <div className="kpi-grid">
+        <div className="kpi">
+          <span className="label-caps">Cases opened</span>
+          <span className="kpi-val">{opened.toLocaleString()}</span>
+        </div>
+        <div className="kpi">
+          <span className="label-caps">Updates sent</span>
+          <span className="kpi-val">{updates.toLocaleString()}</span>
+        </div>
+        <div className="kpi">
+          <span className="label-caps">Actual rate</span>
+          <span className="kpi-val">
+            {rate.toLocaleString()}
+            <span className="faint mono" style={{ fontSize: 13, marginLeft: 4 }}>
+              /s
+            </span>
+          </span>
+        </div>
+      </div>
+
+      {error && (
+        <div
+          className="prose mono"
+          style={{ color: 'var(--danger-muted)', fontSize: 12 }}
+        >
+          {error}
+        </div>
+      )}
     </div>
   );
 }

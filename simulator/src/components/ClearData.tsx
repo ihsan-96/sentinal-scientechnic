@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { clearAll } from '../api';
+import { Icons } from '../lib/icons';
 
 interface Props {
   apiUrl: string;
@@ -34,16 +35,19 @@ export function ClearData({ apiUrl, disabled }: Props) {
   };
 
   return (
-    <div className="space-y-2 border-t border-slate-200 pt-5">
-      <p className="text-sm font-semibold text-red-700">Danger zone</p>
-      <button
-        onClick={onClear}
-        disabled={disabled || busy}
-        className="rounded-md border border-red-300 bg-red-50 px-4 py-2 text-sm font-medium text-red-700 disabled:opacity-40"
-      >
+    <div className="row gap" style={{ justifyContent: 'space-between' }}>
+      <div className="col" style={{ gap: 4 }}>
+        <span className="label-caps" style={{ color: 'var(--danger-muted)' }}>
+          Danger zone
+        </span>
+        <span className="faint mono" style={{ fontSize: 11 }}>
+          {message ?? 'Wipes every incident, the queue, and the cache.'}
+        </span>
+      </div>
+      <button className="btn btn-danger" onClick={onClear} disabled={disabled || busy}>
+        <Icons.Trash size={13} />
         {busy ? 'Clearing…' : 'Clear all data'}
       </button>
-      {message && <p className="text-sm text-slate-600">{message}</p>}
     </div>
   );
 }

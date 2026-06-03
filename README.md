@@ -3,20 +3,83 @@
 Ingests traffic incidents from roadside devices as **cases with a status timeline**,
 processes them through a queue, and streams them to an operator dashboard in real time.
 
+## Quick start
+
+Three pieces run locally: the **backend + infra** (Docker), the **dashboard**, and the
+**simulator**. Bring up the backend first, then either frontend.
+
+### Prerequisites
+
+- **Docker** + **Docker Compose** — runs the backend, PostgreSQL and Redis.
+- **Node 22** + **npm** — to run the dashboard and simulator locally (matches the backend's
+  `node:22-alpine`; the SPAs build with Vite 8, which needs Node ≥ 20.19).
+
+### 1 · Backend + infrastructure (Docker)
+
+Postgres, Redis, and the API (which auto-migrates on boot):
+
+```bash
+docker compose up --build
+```
+
+- API → http://localhost:4000/api
+- **Swagger (interactive API docs)** → **http://localhost:4000/api/docs**
+- Override the port with `API_PORT=… docker compose up`.
+
+### 2 · Dashboard (operator UI)
+
+```bash
+cd frontend
+cp .env.example .env   # VITE_API_URL defaults to http://localhost:4000/api
+npm install
+npm run dev
+```
+
+→ http://localhost:5173
+
+### 3 · Simulator (generate traffic)
+
+```bash
+cd simulator
+cp .env.example .env   # VITE_API_URL defaults to http://localhost:4000/api
+npm install
+npm run dev
+```
+
+→ http://localhost:5174 — set a **Count**, hit run, and flip to the dashboard to watch cases
+open and resolve live. (Details, scenarios and a headless CLI are under
+[Generate traffic](#generate-traffic).)
+
+### Local URLs
+
+| | URL |
+|---|---|
+| Dashboard | http://localhost:5173 |
+| Simulator | http://localhost:5174 |
+| API (REST + SSE) | http://localhost:4000/api |
+| **Swagger docs** | **http://localhost:4000/api/docs** |
+
+> Prefer the backend with hot reload? `docker compose up -d postgres redis`, then
+> `cd backend && cp .env.example .env && npm install && npm run db:migrate && npm run start:dev`.
+
+## Overview
+
 - **Backend** — NestJS, Drizzle (PostgreSQL), BullMQ, Server-Sent Events, Redis
 - **Frontend** — React + Vite, TanStack Query, Recharts, Tailwind
 - **Model** — an **OPEN** starts a case (server returns its id); later **status events**
   update it (recorded in an append-only timeline). Current status = the **latest event by
   event-time**, so out-of-order arrivals (e.g. `ACKNOWLEDGED` after `RESOLVED`) don't regress.
-- **Pipeline** — `POST open/status → queue → worker → cases+events → domain event → SSE + cache invalidation`
+- **Pipeline** — device ingest is async: `POST open/status → queue → worker → cases+events → domain event → SSE + cache invalidation`. An operator's `PATCH status` is **synchronous** (no queue) and converges on the same fan-out.
 
 ```mermaid
 flowchart LR
-    DEV[Devices / Simulator] -->|POST open/status · 202| API[NestJS API]
+    DEV[Roadside Devices] -->|POST open/status · HTTP 202| API[NestJS API]
     API --> Q[(Queue · Redis)] --> WK[Worker] --> DB[(PostgreSQL · cases + events)]
     WK -->|event| SSE[SSE /stream] -.live.-> UI[React Dashboard]
     WK -->|invalidate| RC[(Redis Cache)]
-    UI -->|REST + time-series| API
+    UI -->|GET list / stats| API
+    API -.rows + stats.-> UI
+    UI -->|PATCH status · sync| API
 ```
 
 The backend, Postgres and Redis run in Docker; the dashboard and simulator are standalone
@@ -29,54 +92,26 @@ static SPAs (run locally or deploy to Netlify/Vercel).
 | **Backend API** (NestJS) | 4000 | Docker | REST (ingest, list/filter, status update, stats), the **SSE stream** (`/api/stream`), and the **BullMQ worker** that persists queued incidents. Swagger at `/api/docs`. |
 | **Dashboard** (React/Vite) | 5173 | local / Netlify-Vercel | Operator UI: incident table, filters, detail drawer, summary cards, live updates via SSE. |
 | **Simulator app** (React/Vite) | 5174 | local / Netlify-Vercel | Generates incident traffic in the browser → `POST /incidents/batch`, with scenario controls and a **configurable backend endpoint**. |
-| **PostgreSQL** | 5432 | Docker | Incident storage (single `incidents` table). |
+| **PostgreSQL** | 5432 | Docker | Incident storage (`incidents` + `incident_events`). |
 | **Redis** | 6379 | Docker | Backs the BullMQ ingestion queue **and** the statistics cache. |
 
 The **CLI generator** (`backend/src/simulator/`) has no port — it's a script run via
-`npm run simulate` or `docker compose exec`. Override the API port with
-`API_PORT=… docker compose up`.
+`npm run simulate` or `docker compose exec`.
 
-## Quick start
+## Generate traffic
 
-**1. Backend + infrastructure** (Docker) — Postgres, Redis, and the API which
-auto-migrates on boot:
+Two ways to drive the **real** `POST /incidents/batch` ingestion path:
 
-```bash
-docker compose up --build
-```
-
-API + Swagger → http://localhost:4000/api/docs (override with `API_PORT=… docker compose up`).
-
-**2. Frontend** (http://localhost:5173):
-
-```bash
-cd frontend
-cp .env.example .env   # VITE_API_URL defaults to http://localhost:4000/api
-npm install
-npm run dev
-```
-
-**3. Generate traffic** — two options:
-
-*Simulator app* (browser UI, http://localhost:5174) — interactive, with scenario controls:
-
-```bash
-cd simulator
-cp .env.example .env   # VITE_API_URL defaults to http://localhost:4000/api
-npm install
-npm run dev
-```
+**Simulator app** (browser UI, http://localhost:5174) — interactive, with scenario controls.
 Set the **Backend endpoint** (defaults to `http://localhost:4000/api`), pick a **Count**
 (quick presets **100 / 1,000 / 10,000**, or type one), choose one-shot or continuous mode, a
 **Progress %** (share of opened cases advanced OPEN→ACKNOWLEDGED→IN_PROGRESS→RESOLVED), and an
 **Inject out-of-order** toggle (sends a case's status events in shuffled arrival order to
 exercise the latest-by-event-time rule). Optionally pin case attributes (severity / eventType
 / device / location). **Batch size** = incidents per request (≤ 1000); **Rate** = target
-incidents/sec, best-effort (the panel shows the **actual** achieved rate). Flip to the
-dashboard to watch cases open and resolve live — one row per case, not per status. A **Clear
-all data** button (confirmed) wipes everything via `DELETE /api/incidents`.
+incidents/sec, best-effort (the panel shows the **actual** achieved rate).
 
-*CLI* (scripted / headless / CI) — opens cases in bulk (100 / 1k / 10k):
+**CLI** (scripted / headless / CI) — opens cases in bulk (100 / 1k / 10k):
 
 ```bash
 docker compose exec backend node dist/simulator/simulate.js --count=1000 --rate=50
@@ -84,24 +119,29 @@ docker compose exec backend node dist/simulator/simulate.js --count=1000 --rate=
 ```
 Flags: `--count` (total), `--batch` (per request), `--rate` (incidents/sec; `0` = max), `--url`.
 
-**Clear all data** — wipes the `incidents` table, drains the ingestion queue, and resets
-the stats cache. Same operation as the simulator's *Clear all data* button (`DELETE
-/api/incidents`):
+**Clear all data** — wipes the `incidents` table, drains the ingestion queue, and resets the
+stats cache. Same operation as the simulator's *Clear all data* button (`DELETE /api/incidents`):
 
 ```bash
 docker compose exec backend node dist/db/clear.js
 # or locally from backend/:  npm run db:clear
 ```
 
-> Prefer the backend with hot reload? `docker compose up -d postgres redis`, then
-> `cd backend && cp .env.example .env && npm install && npm run db:migrate && npm run start:dev`.
+## Deploy to Netlify / Vercel
 
-## Deploy the frontends (Netlify / Vercel)
+Both frontends are static SPAs. Each folder (`frontend/`, `simulator/`) ships its own
+`netlify.toml` + `vercel.json` (build command, output dir, SPA fallback, Node 22).
 
-Both the dashboard and the simulator are static SPAs with `netlify.toml` + `vercel.json`
-(build command, output dir, SPA fallback) in their folders. On the platform, set
-**`VITE_API_URL`** to your deployed backend's URL, and add each deployed origin to the
-backend's **`CORS_ORIGIN`** (comma-separated) so cross-origin REST and SSE are allowed.
+**Netlify** — connect this repo; Netlify **auto-detects** the per-folder `netlify.toml` and
+offers a **dropdown** to pick which app to deploy. Create one site for the **dashboard**
+(`frontend`) and one for the **simulator** (`simulator`). On each site set **`VITE_API_URL`**
+(Site settings → Environment variables) to your deployed backend's URL.
+
+**Vercel** — import the repo twice, once per app, with **Root Directory** = `frontend` /
+`simulator`; set `VITE_API_URL` per project.
+
+Then add each deployed origin to the backend's **`CORS_ORIGIN`** (comma-separated) so
+cross-origin REST and SSE are allowed.
 
 ## How the frontend talks to the backend
 
@@ -128,10 +168,6 @@ docker-compose.yml
 
 The dashboard's **time-range presets** (15m / 1h / 6h / 24h / 7d / All) re-scope the summary
 cards, charts, and table together; opening a row shows its **status timeline**.
-
-Two ways to generate traffic: the **simulator app** (`simulator/`, interactive) and the
-**CLI generator** (`backend/src/simulator/`, scriptable). Both drive the real
-`POST /incidents/batch` ingestion path.
 
 Backend modules: `incidents` (domain), `ingestion` (queue write-path), `stats`,
 `realtime` (SSE stream), `cache`, `db`.

@@ -8,13 +8,19 @@ All responses are JSON. Errors share one envelope:
 { "statusCode": 400, "error": "Bad Request", "message": ["..."], "timestamp": "...", "path": "/api/..." }
 ```
 
+**Two write paths.** Device ingestion (`POST`, below) is **asynchronous** — validated, queued, and
+acknowledged with **HTTP 202**; the data appears once the worker drains it. An operator's
+`PATCH /incidents/:id/status` is **synchronous** — applied immediately and returning the updated
+case. Both append to the timeline and emit the same domain event, so the SSE + cache fan-out is
+identical.
+
 ## Ingestion
 
 An incident is a **case**: an OPEN starts one, later status events update it (they don't
 create new cases). See the [data model](./SCHEMA.md).
 
 ### `POST /incidents` — open a case
-Reports a new incident (always OPEN). Returns **202** with the case **id**.
+Reports a new incident (always OPEN). Returns **HTTP 202 Accepted** with the case **id**.
 
 ```json
 {
@@ -30,11 +36,11 @@ If `id` is omitted the server generates a UUIDv7. Response: `{ "id": "0190e8c2-.
 
 ### `POST /incidents/batch` — open many
 Body `{ "incidents": [ { ...open } ] }` (**≤ 1,000** per request; JSON body limit 5 MB).
-Returns **202** `{ "accepted": <n>, "ids": [...] }`.
+Returns **HTTP 202** `{ "accepted": <n>, "ids": [...] }`.
 
 ### `POST /incidents/:id/events` — report a status event
 Device/external status update for a case. Body `{ "status": "RESOLVED", "timestamp": "..." }`
-(`timestamp` defaults to now). Returns **202**. Recorded in the timeline; the current status
+(`timestamp` defaults to now). Returns **HTTP 202**. Recorded in the timeline; the current status
 is the **latest by event time** (out-of-order safe).
 
 ## Retrieval
