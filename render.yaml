@@ -49,12 +49,13 @@ services:
     name: backend
     runtime: docker
     branch: main             # deploys from the repo you create the Blueprint from
-    # With rootDir set, dockerfilePath + dockerContext are relative to rootDir (per
-    # Render's official Blueprint examples). So this builds backend/Dockerfile with
-    # context = backend, mirroring compose `build: ./backend`.
-    rootDir: backend
-    dockerfilePath: Dockerfile
-    dockerContext: .
+    # Repo-root-relative paths, no rootDir. Render's docs disagree on whether these are
+    # relative to the repo root or to rootDir — this form is correct under BOTH: "repo
+    # root" finds backend/Dockerfile, and "relative to rootDir" with rootDir unset
+    # (= repo root) finds the same file. Mirrors compose `build: ./backend`; does not
+    # touch docker-compose.yml.
+    dockerfilePath: backend/Dockerfile
+    dockerContext: backend
     plan: starter            # always-on — this is what removes the cold start
     region: oregon
     healthCheckPath: /api/docs
