@@ -47,10 +47,10 @@ export function ApiReference() {
         <div className="eyebrow">Chapter 07 · The contract</div>
         <h2 className="chapter-title">API reference</h2>
         <p className="lead">
-          Base URL <span className="mono">/api</span> · live Swagger at{' '}
+          Base URL <span className="mono">/api</span>, live Swagger at{' '}
           <span className="mono">/api/docs</span>. There are <strong>two write paths</strong>: device
-          ingestion is <strong>asynchronous</strong> — validated, queued, and acknowledged with{' '}
-          <strong>HTTP 202</strong> — while an operator’s{' '}
+          ingestion is <strong>asynchronous</strong>: validated, queued, and acknowledged with{' '}
+          <strong>HTTP 202</strong>, while an operator’s{' '}
           <span className="mono">PATCH&nbsp;/incidents/:id/status</span> is{' '}
           <strong>synchronous</strong>, applied immediately and returning the updated case.
         </p>
@@ -82,7 +82,7 @@ export function ApiReference() {
           </span>
         </div>
         <p className="prose">
-          Incident activity is coalesced server-side (~2/sec) — the dashboard learns{' '}
+          Incident activity is coalesced server-side (~2/sec); the dashboard learns{' '}
           <em>something changed, and how much</em>, then refetches its current view. Two named events:
         </p>
         <div className="col" style={{ gap: 12, margin: '14px 0' }}>

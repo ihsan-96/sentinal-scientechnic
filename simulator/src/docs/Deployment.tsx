@@ -59,11 +59,11 @@ export function Deployment() {
         <div className="eyebrow">Chapter 04 · Where it runs</div>
         <h2 className="chapter-title">Deployment &amp; hosting</h2>
         <p className="lead">
-          What is containerised, what is static-hosted, and what is managed — for the system as it
+          What is containerised, what is static-hosted, and what is managed, for the system as it
           ships today, and as it would scale out. The <strong>backend</strong> (API + worker + SSE)
           is a long-lived Node process holding DB/Redis connections and live sockets, so it ships as
           one reproducible Docker deployable with Postgres and Redis. The <strong>dashboard</strong>{' '}
-          has no server runtime — it builds to static files served from a <strong>CDN/edge</strong>{' '}
+          has no server runtime, so it builds to static files served from a <strong>CDN/edge</strong>{' '}
           (cheap, scales to many operators for free, low-latency, deploys decoupled), pointed at the
           backend via <span className="mono">VITE_API_URL</span>. SSE is plain HTTP, so it stays
           CDN/proxy-friendly.

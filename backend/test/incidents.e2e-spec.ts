@@ -53,7 +53,7 @@ describe('Incidents API (e2e)', () => {
   });
 
   it('keeps the latest-by-event-time status when events arrive out of order', async () => {
-    // RESOLVED at 10:30, then a LATE ACKNOWLEDGED at 10:10 — must not regress.
+    // RESOLVED at 10:30, then a LATE ACKNOWLEDGED at 10:10, must not regress.
     await service.applyStatusEvent(caseA, IncidentStatus.RESOLVED, new Date('2026-06-02T10:30:00Z'));
     await service.applyStatusEvent(caseA, IncidentStatus.ACKNOWLEDGED, new Date('2026-06-02T10:10:00Z'));
 

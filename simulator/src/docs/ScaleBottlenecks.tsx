@@ -25,7 +25,7 @@ export function ScaleBottlenecks() {
         <h2 className="chapter-title">Bottlenecks &amp; scaling</h2>
         <p className="lead">
           The single-node build ships today. Slide the load up to see which pressure points light up
-          — and how the same shape scales out from <strong>100 to 100,000 devices</strong>. Not every
+          and how the same shape scales out from <strong>100 to 100,000 devices</strong>. Not every
           limit is driven by device count.
         </p>
       </div>
@@ -79,7 +79,7 @@ export function ScaleBottlenecks() {
                 )}
               </div>
               <div className="faint mono" style={{ fontSize: 10.5, marginBottom: 14 }}>
-                Driver — {b.driver}
+                Driver: {b.driver}
               </div>
               <div className="grid-3">
                 <div>

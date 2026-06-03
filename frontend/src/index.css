@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* ===========================================================================
-   Traffic Incident Dashboard — Neumorphism design system
+   Traffic Incident Dashboard (Neumorphism design system)
    Soft extruded surfaces on warm gray. High-contrast text & badges.
    Ported from the SENTINEL design prototype; tokens are fixed to the
    canonical look (teal accent, mono type, comfortable density).
@@ -25,8 +25,8 @@
   --warning: #fe9900;
   --danger: #ff2157;
   --high: #f06400;               /* between warning and danger */
-  --high-muted: #b34200;         /* deep burnt-orange — "semi danger" content tone */
-  --danger-muted: #c1083b;       /* deep crimson — danger content tone */
+  --high-muted: #b34200;         /* deep burnt-orange, "semi danger" content tone */
+  --danger-muted: #c1083b;       /* deep crimson, danger content tone */
 
   /* Neumorphism shadow stops */
   --neu: 1;                       /* depth multiplier */
@@ -275,7 +275,7 @@ button { font-family: inherit; cursor: pointer; color: inherit; }
 .btn-icon { padding: 9px; }
 .btn svg { width: 15px; height: 15px; }
 
-/* ---- Badges (high contrast — solid fills) ---- */
+/* ---- Badges (high contrast, solid fills) ---- */
 .badge {
   display: inline-flex; align-items: center; gap: 6px;
   padding: 3px 9px 3px 8px;

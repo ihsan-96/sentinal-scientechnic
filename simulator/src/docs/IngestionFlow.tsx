@@ -35,27 +35,27 @@ const TONE_VAR: Record<Tone, string> = {
   write: 'var(--warning)',
 };
 
-// Scenario A — open a case, push it live, dashboard refetches.
+// Scenario A: open a case, push it live, dashboard refetches.
 const OPEN_FLOW: Step[] = [
   { from: 'dev', to: 'api', tone: 'req', wire: 'POST /incidents (OPEN)', note: 'A roadside device reports a new incident to the ingestion endpoint.' },
-  { from: 'api', to: 'dev', tone: 'res', wire: '202 Accepted { id }', note: 'The API validates the DTO, returns HTTP 202 Accepted immediately, and enqueues the job — it never blocks on the database.' },
+  { from: 'api', to: 'dev', tone: 'res', wire: '202 Accepted { id }', note: 'The API validates the DTO, returns HTTP 202 Accepted immediately, and enqueues the job; it never blocks on the database.' },
   { from: 'api', to: 'queue', tone: 'req', wire: 'enqueue open', note: 'The job lands on the BullMQ queue (Redis), decoupling the request from the write.' },
   { from: 'queue', to: 'worker', tone: 'event', wire: 'deliver job', note: 'The in-process worker (concurrency 10) picks up the job.' },
   { from: 'worker', to: 'db', tone: 'req', wire: 'INSERT case + OPEN event', note: 'Idempotent open (on-conflict-do-nothing), so a BullMQ retry can never double-create the case.' },
   { from: 'worker', to: 'events', tone: 'event', wire: 'emit incident.created', note: 'After the write, the service emits an in-process domain event (EventEmitter2).' },
   { from: 'events', to: 'sse', tone: 'event', wire: 'buffer ~500ms', note: 'The SSE listener buffers change events for 500ms (bufferTime) to coalesce bursts.' },
   { from: 'events', to: 'cache', tone: 'event', wire: 'invalidate stats:summary', note: 'In parallel, the cache listener drops the all-time stats summary so the next read is fresh.' },
-  { from: 'sse', to: 'ui', tone: 'live', nodes: ['sse', 'ui'], wire: 'incidents.changed { count }', note: 'Every connected dashboard gets one small coalesced nudge — a count, not the incident itself.' },
-  { from: 'ui', to: 'api', tone: 'read', wire: 'GET /incidents + /stats', note: 'On the nudge, TanStack Query refetches the current filtered / paginated view — through the API.' },
+  { from: 'sse', to: 'ui', tone: 'live', nodes: ['sse', 'ui'], wire: 'incidents.changed { count }', note: 'Every connected dashboard gets one small coalesced nudge, a count, not the incident itself.' },
+  { from: 'ui', to: 'api', tone: 'read', wire: 'GET /incidents + /stats', note: 'On the nudge, TanStack Query refetches the current filtered / paginated view, through the API.' },
   { from: 'api', to: 'db', tone: 'read', wire: 'SELECT (indexed)', note: 'Reads hit PostgreSQL via the repository; the all-time summary is served from the Redis cache.' },
-  { from: 'api', to: 'ui', tone: 'res', wire: 'rows + stats', note: 'The dashboard re-renders — one row per case, never per status. The loop is closed.' },
+  { from: 'api', to: 'ui', tone: 'res', wire: 'rows + stats', note: 'The dashboard re-renders one row per case, never per status. The loop is closed.' },
 ];
 
 const T0 = '09:00';
 const T1 = '09:05';
 const T2 = '09:10';
 
-// Scenario B — a late event must not regress the case.
+// Scenario B: a late event must not regress the case.
 const OOO_FLOW: Step[] = [
   {
     from: 'worker', to: 'db', tone: 'req', wire: 'case open @ 09:00',
@@ -75,13 +75,13 @@ const OOO_FLOW: Step[] = [
   },
   {
     from: 'dev', to: 'api', tone: 'req', wire: 'POST ACKNOWLEDGED @ 09:05 (late)',
-    note: 'Now an older event arrives out of order — it happened at 09:05 but lands after the 09:10 RESOLVED.',
+    note: 'Now an older event arrives out of order: it happened at 09:05 but lands after the 09:10 RESOLVED.',
     status: 'RESOLVED', lastEventAt: T2,
     timeline: [{ status: 'OPEN', at: T0 }, { status: 'RESOLVED', at: T2 }],
   },
   {
     from: 'worker', to: 'db', tone: 'req', punch: true, wire: 'apply: 09:05 ≤ 09:10 → recorded, not applied',
-    note: 'Key rule: the late event is appended to the timeline, but because 09:05 ≤ last_event_at it does NOT regress the case. Status stays RESOLVED — ingestion is order-independent.',
+    note: 'Key rule: the late event is appended to the timeline, but because 09:05 ≤ last_event_at it does NOT regress the case. Status stays RESOLVED; ingestion is order-independent.',
     status: 'RESOLVED', lastEventAt: T2,
     timeline: [
       { status: 'OPEN', at: T0 },
@@ -91,12 +91,12 @@ const OOO_FLOW: Step[] = [
   },
 ];
 
-// Scenario C — an operator resolves a case (synchronous write path, no queue).
+// Scenario C: an operator resolves a case (synchronous write path, no queue).
 const OP_FLOW: Step[] = [
-  { from: 'ui', to: 'api', tone: 'write', wire: 'PATCH /incidents/:id/status (RESOLVED)', note: 'An operator resolves a case from the dashboard. Unlike device ingestion, this write is applied synchronously — it never touches the queue.' },
+  { from: 'ui', to: 'api', tone: 'write', wire: 'PATCH /incidents/:id/status (RESOLVED)', note: 'An operator resolves a case from the dashboard. Unlike device ingestion, this write is applied synchronously; it never touches the queue.' },
   { from: 'api', to: 'db', tone: 'write', wire: 'append event + advance status', note: 'The API writes straight to PostgreSQL inside the request: it appends a RESOLVED event and updates the case’s current status in one call.' },
-  { from: 'api', to: 'ui', tone: 'res', wire: '200 OK · updated case', note: 'The operator gets the updated case back immediately — the action is confirmed, not merely accepted (202).' },
-  { from: 'api', to: 'events', tone: 'event', wire: 'emit incident.updated', note: 'The very same domain event fires as the queued path — the synchronous write converges on the identical fan-out.' },
+  { from: 'api', to: 'ui', tone: 'res', wire: '200 OK, updated case', note: 'The operator gets the updated case back immediately; the action is confirmed, not merely accepted (202).' },
+  { from: 'api', to: 'events', tone: 'event', wire: 'emit incident.updated', note: 'The very same domain event fires as the queued path; the synchronous write converges on the identical fan-out.' },
   { from: 'events', to: 'cache', tone: 'event', wire: 'invalidate stats:summary', note: 'One listener drops the all-time stats cache so the next read is fresh.' },
   { from: 'events', to: 'sse', tone: 'event', wire: 'buffer ~500ms', note: 'The other listener coalesces the change for the SSE stream.' },
   { from: 'sse', to: 'ui', tone: 'live', nodes: ['sse', 'ui'], wire: 'incidents.changed { count }', note: 'Every OTHER connected dashboard gets the nudge and refetches. Two write paths (device-async, operator-sync), one fan-out.' },
@@ -146,7 +146,7 @@ export function IngestionFlow() {
         <div>
           <div className="card-title">Live walkthrough</div>
           <div className="faint mono" style={{ fontSize: 11, marginTop: 4 }}>
-            One pulse travels the active line per step — the lines stay put.
+            One pulse travels the active line per step; the lines stay put.
           </div>
         </div>
         <div className="seg">

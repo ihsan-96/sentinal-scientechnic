@@ -100,10 +100,10 @@ export function DesignDecisions() {
           </tbody>
         </table>
         <p className="prose" style={{ marginTop: 16 }}>
-          The dashboard needs new incidents without a manual refresh — a purely{' '}
+          The dashboard needs new incidents without a manual refresh, a purely{' '}
           <strong>server → client</strong> push. One push beats N polls, and we use none of
           WebSocket’s bidirectional/binary machinery. WebSocket would win only if clients needed to
-          stream <em>to</em> the server — they don’t.
+          stream <em>to</em> the server, which they don’t.
         </p>
       </div>
     </>

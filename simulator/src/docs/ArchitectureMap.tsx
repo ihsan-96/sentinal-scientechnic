@@ -31,7 +31,7 @@ interface Props {
   viewH: number;
   /** Ambient continuous flow (decorative). */
   live?: boolean;
-  /** Counters — a bump fires a one-shot packet pulse. */
+  /** Counters; a bump fires a one-shot packet pulse. */
   activity?: { opens: number; updates: number };
   /** Clickable nodes + a detail strip below the map. */
   selectable?: boolean;
@@ -120,7 +120,7 @@ export function ArchitectureMap({
     [edges, byId],
   );
 
-  // Labelled containers (e.g. the single Nest process) — bbox over their members.
+  // Labelled containers (e.g. the single Nest process); bbox over their members.
   const groupBoxes = useMemo(() => {
     if (!groups) return [];
     const padX = 16;
@@ -206,7 +206,7 @@ export function ArchitectureMap({
           <path key={`e${i}`} className={`edge ${p.edge.kind}`} d={p.d} />
         ))}
 
-        {/* continuous flow while live — reads oscillate (request out / response back) */}
+        {/* continuous flow while live; reads oscillate (request out / response back) */}
         {live &&
           !spot &&
           paths.map((p, i) => {
@@ -254,7 +254,7 @@ export function ArchitectureMap({
           const b = box(n);
           const on = sel === n.id;
           const hot = litNodes?.has(n.id);
-          // SVG text doesn't wrap — clamp long names to the available width.
+          // SVG text doesn't wrap, so clamp long names to the available width.
           const avail = b.w - 44;
           const clamp = n.name.length * 8.1 > avail;
           return (

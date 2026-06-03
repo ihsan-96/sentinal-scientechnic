@@ -13,7 +13,7 @@ interface Props {
   count: number;
 }
 
-// Saved views — only severity/status presets the backend `GET /incidents` supports.
+// Saved views: only severity/status presets the backend `GET /incidents` supports.
 // (An event-type preset like "Accidents" is a future expansion; the list API has no
 // eventType filter yet.)
 type SavedPatch = Pick<Filters, 'severity' | 'status'>;

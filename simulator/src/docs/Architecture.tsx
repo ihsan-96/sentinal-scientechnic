@@ -45,7 +45,7 @@ export function Architecture() {
         </div>
         <ArchitectureMap nodes={NODES} edges={EDGES} groups={GROUPS} viewW={970} viewH={472} selectable legend />
         <p className="faint mono" style={{ fontSize: 11, marginTop: 14, lineHeight: 1.6 }}>
-          The dashboard never touches the database directly — TanStack Query reads Postgres and the
+          The dashboard never touches the database directly. TanStack Query reads Postgres and the
           stats cache <strong>through the API</strong>.
         </p>
       </div>

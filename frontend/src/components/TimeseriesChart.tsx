@@ -50,7 +50,7 @@ export function TimeseriesChart({ points, bucket, height = 230 }: Props) {
   const ih = H - PAD_T - PAD_B;
 
   // A single-bucket series (common for ALL when data is concentrated near "now") would draw a
-  // zero-width sliver — duplicate it so it renders as a visible flat band across the width.
+  // zero-width sliver, so duplicate it to render a visible flat band across the width.
   const pts = points.length === 1 ? [points[0], points[0]] : points;
   const hover = useHover(pts.length);
 

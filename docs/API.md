@@ -1,6 +1,6 @@
 # API Reference
 
-Base URL: `http://localhost:4000/api` · Interactive docs (Swagger): `/api/docs`
+Base URL: `http://localhost:4000/api`. Interactive docs (Swagger): `/api/docs`.
 
 All responses are JSON. Errors share one envelope:
 
@@ -8,19 +8,19 @@ All responses are JSON. Errors share one envelope:
 { "statusCode": 400, "error": "Bad Request", "message": ["..."], "timestamp": "...", "path": "/api/..." }
 ```
 
-**Two write paths.** Device ingestion (`POST`, below) is **asynchronous** — validated, queued, and
-acknowledged with **HTTP 202**; the data appears once the worker drains it. An operator's
-`PATCH /incidents/:id/status` is **synchronous** — applied immediately and returning the updated
-case. Both append to the timeline and emit the same domain event, so the SSE + cache fan-out is
+**Two write paths.** Device ingestion (`POST`, below) is asynchronous: validated, queued, and
+acknowledged with HTTP 202. The data appears once the worker drains it. An operator's
+`PATCH /incidents/:id/status` is synchronous: applied immediately, returning the updated case.
+Both append to the timeline and emit the same domain event, so the SSE and cache fan-out is
 identical.
 
 ## Ingestion
 
-An incident is a **case**: an OPEN starts one, later status events update it (they don't
-create new cases). See the [data model](./SCHEMA.md).
+An incident is a case: an OPEN starts one, later status events update it (they don't create new
+cases). See the [data model](./SCHEMA.md).
 
-### `POST /incidents` — open a case
-Reports a new incident (always OPEN). Returns **HTTP 202 Accepted** with the case **id**.
+### `POST /incidents` (open a case)
+Reports a new incident (always OPEN). Returns HTTP 202 Accepted with the case id.
 
 ```json
 {
@@ -34,14 +34,14 @@ Reports a new incident (always OPEN). Returns **HTTP 202 Accepted** with the cas
 ```
 If `id` is omitted the server generates a UUIDv7. Response: `{ "id": "0190e8c2-..." }`.
 
-### `POST /incidents/batch` — open many
-Body `{ "incidents": [ { ...open } ] }` (**≤ 1,000** per request; JSON body limit 5 MB).
-Returns **HTTP 202** `{ "accepted": <n>, "ids": [...] }`.
+### `POST /incidents/batch` (open many)
+Body `{ "incidents": [ { ...open } ] }` (≤ 1,000 per request; JSON body limit 5 MB).
+Returns HTTP 202 `{ "accepted": <n>, "ids": [...] }`.
 
-### `POST /incidents/:id/events` — report a status event
+### `POST /incidents/:id/events` (report a status event)
 Device/external status update for a case. Body `{ "status": "RESOLVED", "timestamp": "..." }`
-(`timestamp` defaults to now). Returns **HTTP 202**. Recorded in the timeline; the current status
-is the **latest by event time** (out-of-order safe).
+(`timestamp` defaults to now). Returns HTTP 202. Recorded in the timeline; the current status
+is the latest by event time (out-of-order safe).
 
 ## Retrieval
 
@@ -50,17 +50,17 @@ Paginated, filtered list of cases.
 
 | Query param | Type | Default |
 |---|---|---|
-| `severity` | `LOW\|MEDIUM\|HIGH\|CRITICAL` | — |
-| `status` | `OPEN\|ACKNOWLEDGED\|IN_PROGRESS\|RESOLVED` | — |
-| `deviceId` | string | — |
-| `from`, `to` | ISO 8601 (filters `occurredAt`) | — |
+| `severity` | `LOW\|MEDIUM\|HIGH\|CRITICAL` | (none) |
+| `status` | `OPEN\|ACKNOWLEDGED\|IN_PROGRESS\|RESOLVED` | (none) |
+| `deviceId` | string | (none) |
+| `from`, `to` | ISO 8601 (filters `occurredAt`) | (none) |
 | `page` | int ≥ 1 | 1 |
-| `pageSize` | int 1–100 | 20 |
+| `pageSize` | int 1-100 | 20 |
 
 Response: `{ "data": [ /* Incident[] */ ], "page": 1, "pageSize": 20, "total": 137 }`.
 
 ### `GET /incidents/:id`
-A single case **with its status timeline**, or **404**:
+A single case with its status timeline, or 404:
 ```json
 { "id": "...", "status": "RESOLVED", "severity": "HIGH", "...": "...",
   "events": [ { "status": "OPEN", "occurredAt": "..." }, { "status": "RESOLVED", "occurredAt": "..." } ] }
@@ -69,21 +69,14 @@ A single case **with its status timeline**, or **404**:
 ## Updates
 
 ### `PATCH /incidents/:id/status`
-Operator action, applied **immediately** (synchronous). Body `{ "status": "RESOLVED" }`.
-Appends an event (timestamp = now) and returns the updated case, or **404**.
-
-## Maintenance
-
-### `DELETE /incidents`
-Destructive reset: deletes **all** incidents, drains the ingestion queue, and resets the
-stats cache. Returns `{ "cleared": <n> }`. Backs the simulator's *Clear all data* button
-and mirrors the `npm run db:clear` CLI.
+Operator action, applied immediately (synchronous). Body `{ "status": "RESOLVED" }`. Appends an
+event (timestamp = now) and returns the updated case, or 404.
 
 ## Statistics
 
 ### `GET /stats?from&to`
-Summary case counts. Optional `from`/`to` (ISO, on `occurredAt`) window the result; with
-both omitted it returns the global summary (cached in Redis, invalidated on every write).
+Summary case counts. Optional `from`/`to` (ISO, on `occurredAt`) window the result; with both
+omitted it returns the global summary (cached in Redis, invalidated on every write).
 
 ```json
 {
@@ -103,30 +96,30 @@ Bucketed series for the charts. `bucket` ∈ `minute|fiveMinutes|fifteenMinutes|
     "bySeverity": { "LOW": 6, "MEDIUM": 3, "HIGH": 2, "CRITICAL": 1 } }
 ] }
 ```
-`opened`/`resolved` per bucket; `active` = currently-open over time (cumulative opened − resolved).
+`opened`/`resolved` are per bucket; `active` is currently-open over time (cumulative opened minus resolved).
 
 ## Maintenance
 
 ### `DELETE /incidents`
-Destructive reset: deletes **all** cases (events cascade), drains the ingestion queue, and
-resets the stats cache. Returns `{ "cleared": <n> }`. Backs the simulator's *Clear all data*
-button and mirrors `npm run db:clear`.
+Destructive reset: deletes all cases (events cascade), drains the ingestion queue, and resets
+the stats cache. Returns `{ "cleared": <n> }`. Backs the simulator's *Clear all data* button and
+mirrors `npm run db:clear`.
 
 ## Real-time (Server-Sent Events)
 
 ### `GET /stream`
-A long-lived SSE stream (consume with `EventSource`). Incident activity is **coalesced**
-server-side (~2/sec) so a high-volume run doesn't flood clients with tens of thousands of
-messages — the dashboard only needs "something changed, and how much," then refetches.
+A long-lived SSE stream (consume with `EventSource`). Incident activity is coalesced server-side
+(~2/sec) so a high-volume run doesn't flood clients with tens of thousands of messages. The
+dashboard only needs to know that something changed and by how much, then refetches.
 
-- `incidents.changed` — data `{ "count": <n> }` (incidents changed in the window)
-- `incidents.cleared` — data `{ "cleared": true }` (sent immediately when all data is cleared)
+- `incidents.changed`: data `{ "count": <n> }` (incidents changed in the window)
+- `incidents.cleared`: data `{ "cleared": true }` (sent immediately when all data is cleared)
 
 ```
 event: incidents.changed
 data: {"count":42}
 ```
 
-SSE is used instead of polling `GET /incidents` (push, not repeated re-fetch) and instead of
-WebSocket (the feed is one-directional) — see
+SSE is used instead of polling `GET /incidents` (push, not repeated re-fetch) and instead of a
+WebSocket (the feed is one-directional). See
 [ARCHITECTURE.md](./ARCHITECTURE.md#real-time-transport-sse-vs-rest-polling-vs-websocket).

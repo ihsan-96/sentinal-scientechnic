@@ -37,7 +37,7 @@ export function DataModel() {
           A traffic incident is a <strong>case</strong> (<span className="mono">incidents</span>) with
           an append-only <strong>status timeline</strong> (<span className="mono">incident_events</span>).
           The current <span className="mono">status</span> is denormalised onto the case and derived
-          from the latest event-time — the rule the <strong>out-of-order walkthrough</strong> in
+          from the latest event-time, the rule the <strong>out-of-order walkthrough</strong> in
           Architecture demonstrates.
         </p>
       </div>

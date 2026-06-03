@@ -9,7 +9,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const request = ctx.getRequest<Request>();
 
     // Some library errors (e.g. body-parser PayloadTooLargeError, malformed JSON) carry a
-    // numeric status but aren't HttpExceptions — surface them honestly instead of a 500.
+    // numeric status but aren't HttpExceptions, so surface them honestly instead of a 500.
     const libStatus =
       (exception as { status?: number; statusCode?: number })?.status ??
       (exception as { statusCode?: number })?.statusCode;

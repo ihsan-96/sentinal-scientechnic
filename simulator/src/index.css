@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* ===========================================================================
-   Traffic Incident Simulator — SENTINEL neumorphism design system
+   Traffic Incident Simulator (SENTINEL neumorphism design system)
    Shared visual language with the operator dashboard (frontend/src/index.css):
    soft extruded surfaces on warm gray, teal accent, mono type.
    Section 1 is the shared design system. Section 2 adds simulator-docs classes.
@@ -379,7 +379,7 @@ select.field { padding-right: 30px; background-image: url("data:image/svg+xml;ut
 /* ---- Architecture map (SVG) ---- */
 .map-wrap { width: 100%; }
 .map-svg { width: 100%; height: auto; display: block; overflow: visible; }
-/* ingest & events: a SOLID line (matches the legend) — motion comes from the moving packets */
+/* ingest & events: a SOLID line (matches the legend); motion comes from the moving packets */
 .edge { fill: none; stroke: var(--text-faint); stroke-width: 2; stroke-opacity: 0.72; }
 .edge.read { stroke: var(--accent); stroke-dasharray: 6 5; stroke-opacity: 0.9; }
 .edge-packet { fill: var(--accent); }
@@ -412,7 +412,7 @@ select.field { padding-right: 30px; background-image: url("data:image/svg+xml;ut
   min-height: 86px;
 }
 
-/* spotlight (walkthrough) mode — dim everything but the active hop */
+/* spotlight (walkthrough) mode: dim everything but the active hop */
 .map-svg.spot .edge { stroke-opacity: 0.16; }
 .map-svg.spot .node { opacity: 0.38; transition: opacity 0.25s; }
 .map-svg.spot .node.hot { opacity: 1; }

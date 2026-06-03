@@ -23,7 +23,7 @@ const SYSTEM: NavItem[] = [
 interface Props {
   active: NavId;
   onNav: (id: NavId) => void;
-  /** Critical incidents in range — shown as the Incidents nav badge. */
+  /** Critical incidents in range, shown as the Incidents nav badge. */
   criticalCount?: number;
   connected: boolean;
   eventCount: number;

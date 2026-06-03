@@ -98,7 +98,7 @@ export function SimulatorForm({ config, onChange, disabled }: Props) {
       </div>
 
       <p className="faint mono" style={{ fontSize: 11, lineHeight: 1.6, margin: 0 }}>
-        Batch size = incidents per request (≤ 1000). Rate is best-effort — actual throughput is
+        Batch size = incidents per request (≤ 1000). Rate is best-effort; actual throughput is
         bounded by the backend; the live rate is shown after you start.
       </p>
 

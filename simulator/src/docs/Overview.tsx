@@ -8,7 +8,7 @@ interface Props {
 }
 
 const STATS: { val: string; label: string }[] = [
-  { val: 'HTTP 202', label: 'Accepted — API enqueues, never blocks on the DB' },
+  { val: 'HTTP 202', label: 'Accepted, API enqueues and never blocks on the DB' },
   { val: '~2 / sec', label: 'Coalesced SSE nudges, not per-incident' },
   { val: '100→100k', label: 'Devices on one architectural shape' },
 ];
@@ -16,10 +16,10 @@ const STATS: { val: string; label: string }[] = [
 const CHAPTERS: { id: NavId; icon: keyof typeof Icons; title: string; desc: string }[] = [
   { id: 'architecture', icon: 'Map', title: 'Architecture', desc: 'Click through the system map and watch a request flow hop-by-hop, including the read-after-SSE.' },
   { id: 'datamodel', icon: 'Database', title: 'Data Model', desc: 'The two tables, their one-to-many relationship, and the indexes that back every query.' },
-  { id: 'api', icon: 'Code', title: 'API Reference', desc: 'Every endpoint and SSE event — and the async (202) vs synchronous operator write paths.' },
-  { id: 'decisions', icon: 'GitBranch', title: 'Design Decisions', desc: 'The main trade-offs — problem, alternatives, why each pick won, and how it scales.' },
+  { id: 'api', icon: 'Code', title: 'API Reference', desc: 'Every endpoint and SSE event, plus the async (202) vs synchronous operator write paths.' },
+  { id: 'decisions', icon: 'GitBranch', title: 'Design Decisions', desc: 'The main trade-offs: problem, alternatives, why each pick won, and how it scales.' },
   { id: 'tech', icon: 'Layers', title: 'Tech Stack', desc: 'What every tool does here and why it beat the obvious alternative.' },
-  { id: 'deployment', icon: 'Server', title: 'Deployment', desc: 'What runs in Docker, what is static-hosted — today and at 100k.' },
+  { id: 'deployment', icon: 'Server', title: 'Deployment', desc: 'What runs in Docker, what is static-hosted, today and at 100k.' },
   { id: 'scale', icon: 'Scale', title: 'Scale & Bottlenecks', desc: 'Dial the load and see the real pressure points and the scale-out path.' },
 ];
 
@@ -35,7 +35,7 @@ export function Overview({ onNav }: Props) {
           Roadside devices report incidents as <strong>cases with a status timeline</strong>. The
           backend ingests them through a <strong>queue</strong>, persists them in{' '}
           <strong>PostgreSQL</strong>, and streams live updates to an operator{' '}
-          <strong>dashboard over SSE</strong> — with out-of-order arrivals handled by latest
+          <strong>dashboard over SSE</strong>, with out-of-order arrivals handled by latest
           event-time. This guide walks the architecture, the decisions behind it, where it runs, and
           how it scales.
         </p>
