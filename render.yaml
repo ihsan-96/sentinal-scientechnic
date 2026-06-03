@@ -49,10 +49,12 @@ services:
     name: backend
     runtime: docker
     branch: main             # deploys from the repo you create the Blueprint from
-    # Per Render's spec, dockerfilePath/dockerContext are relative to the REPO ROOT
-    # (not affected by rootDir) — so both must include the backend/ prefix.
-    dockerfilePath: ./backend/Dockerfile
-    dockerContext: ./backend   # mirrors compose `build: ./backend`
+    # With rootDir set, dockerfilePath + dockerContext are relative to rootDir (per
+    # Render's official Blueprint examples). So this builds backend/Dockerfile with
+    # context = backend, mirroring compose `build: ./backend`.
+    rootDir: backend
+    dockerfilePath: Dockerfile
+    dockerContext: .
     plan: starter            # always-on — this is what removes the cold start
     region: oregon
     healthCheckPath: /api/docs
